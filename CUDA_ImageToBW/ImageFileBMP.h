@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <fstream>
+#include <iostream>
 #include <algorithm>
 
 #include "ImagePixel.h"
@@ -13,12 +14,13 @@ public:
 	ImageFileBMP(const char* relativePath);
 	~ImageFileBMP();
 
-	void ReadFileToMemory();
+	bool ReadFileToMemory();
 	ImagePixel* GetPixelsInOrder(PixelOrder order);
 
-	unsigned int Width = 0;
-	unsigned int Height = 0;
-	unsigned int PixelsCount = 0;
+	unsigned int Width;
+	unsigned int Height;
+	unsigned int PixelsCount;
+	
 private:
 	bool IsBitmapFormatValid();
 

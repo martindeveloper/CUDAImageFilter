@@ -1,6 +1,6 @@
 #include "ImageFileBMP.h"
 
-ImageFileBMP::ImageFileBMP(const char* relativePath) : FilePath(relativePath)
+ImageFileBMP::ImageFileBMP(const char* relativePath) : FilePath(relativePath), Width(0), Height(0), PixelsCount(0)
 {
 }
 
@@ -9,7 +9,7 @@ ImageFileBMP::~ImageFileBMP()
 	FileBuffer.clear();
 }
 
-void ImageFileBMP::ReadFileToMemory()
+bool ImageFileBMP::ReadFileToMemory()
 {
 	std::ifstream file(FilePath, std::ifstream::in | std::ios::binary);
 
@@ -40,18 +40,22 @@ void ImageFileBMP::ReadFileToMemory()
 		}
 		else
 		{
-			throw new std::exception("File needs to be bitmap, uncompressed and 24bit");
+			std::cout << "Error: File needs to be bitmap, uncompressed and 24bit" << std::endl;
+			return false;
 		}
 	}
 	else
 	{
-		throw new std::exception("Can not read file");
+		std::cout << "Error: Can not read file" << std::endl;
+		return false;
 	}
+
+	return true;
 }
 
 bool ImageFileBMP::IsBitmapFormatValid()
 {
-	bool isBitmap = FileHeader.bfType == 'MB';
+	bool isBitmap = FileHeader.bfType == 0x4D42;
 	bool isUncompressed = InfoHeader.biCompression == 0L;
 	bool is24bit = InfoHeader.biBitCount == 24;
 
