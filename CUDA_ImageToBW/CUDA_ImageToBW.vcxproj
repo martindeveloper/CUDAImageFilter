@@ -170,6 +170,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <DeploymentContent>true</DeploymentContent>
     </Image>
     <Image Include="Output_grayscale.bmp" />
+    <Image Include="Output_sepia.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

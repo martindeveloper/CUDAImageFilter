@@ -21,7 +21,7 @@ __global__ void CreateSepiaImageKernel(struct ImagePixel* inputPixels, struct Im
 
 	// BGR order is used
 	outputPixel->B = (inputPixel->B * 0.393f) + (inputPixel->G * 0.769f) + (inputPixel->R * 0.189f);
-	outputPixel->G = (inputPixel->B * 0.349f) + (inputPixel->G * 0.686f) + (inputPixel->R * 0.168f);
+	outputPixel->G = (inputPixel->B * 0.349f) + (inputPixel->G * 0.686f) + (inputPixel->R * 0.168f); 
 	outputPixel->R = (inputPixel->B * 0.272f) + (inputPixel->G * 0.534f) + (inputPixel->R * 0.131f);
 }
 
