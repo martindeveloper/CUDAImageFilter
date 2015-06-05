@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <fstream>
+#include <iostream>
 #include <algorithm>
+#include <cstdint>
 
 #include "ImagePixel.h"
 #include "ImageHeaderBMP.h"
@@ -13,14 +15,18 @@ public:
 	ImageFileBMP(const char* relativePath);
 	~ImageFileBMP();
 
-	void ReadFileToMemory();
+	bool ReadFileToMemory();
 	ImagePixel* GetPixelsInOrder(PixelOrder order);
+	void SetPixelsInOrder(ImagePixel* pixels, PixelOrder order);
+	bool SaveChangesToFile(const char* PathToFile);
 
-	unsigned int Width = 0;
-	unsigned int Height = 0;
-	unsigned int PixelsCount = 0;
+	uint32_t Width;
+	uint32_t Height;
+	uint32_t PixelsCount;
+	
 private:
 	bool IsBitmapFormatValid();
+	char* GetPointerToPixels();
 
 	const char* FilePath;
 	std::vector<char> FileBuffer;

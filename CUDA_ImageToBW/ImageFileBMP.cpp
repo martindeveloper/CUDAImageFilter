@@ -1,6 +1,6 @@
 #include "ImageFileBMP.h"
 
-ImageFileBMP::ImageFileBMP(const char* relativePath) : FilePath(relativePath)
+ImageFileBMP::ImageFileBMP(const char* relativePath) : FilePath(relativePath), Width(0), Height(0), PixelsCount(0)
 {
 }
 
@@ -9,7 +9,7 @@ ImageFileBMP::~ImageFileBMP()
 	FileBuffer.clear();
 }
 
-void ImageFileBMP::ReadFileToMemory()
+bool ImageFileBMP::ReadFileToMemory()
 {
 	std::ifstream file(FilePath, std::ifstream::in | std::ios::binary);
 
@@ -22,7 +22,7 @@ void ImageFileBMP::ReadFileToMemory()
 		std::streampos length = file.tellg();
 		file.seekg(0, std::ios::beg);
 
-		FileBuffer.resize((unsigned int)length);
+		FileBuffer.resize((uint32_t)length);
 
 		// Read file
 		file.read(&FileBuffer[0], length);
@@ -37,64 +37,101 @@ void ImageFileBMP::ReadFileToMemory()
 		{
 			Width = InfoHeader.biWidth;
 			Height = InfoHeader.biHeight;
+
+			PixelsCount = Width * Height;
 		}
 		else
 		{
-			throw new std::exception("File needs to be bitmap, uncompressed and 24bit");
+			std::cerr << "Error: File needs to be bitmap, uncompressed and 24bit" << std::endl;
+			return false;
 		}
 	}
 	else
 	{
-		throw new std::exception("Can not read file");
+		std::cerr << "Error: Can not read file" << std::endl;
+		return false;
 	}
+
+	return true;
 }
 
 bool ImageFileBMP::IsBitmapFormatValid()
 {
-	bool isBitmap = FileHeader.bfType == 'MB';
+	bool isBitmap = FileHeader.bfType == 0x4D42;
 	bool isUncompressed = InfoHeader.biCompression == 0L;
 	bool is24bit = InfoHeader.biBitCount == 24;
 
 	return isBitmap && isUncompressed && is24bit;
 }
 
-ImagePixel* ImageFileBMP::GetPixelsInOrder(PixelOrder order)
+bool ImageFileBMP::SaveChangesToFile(const char* PathToFile)
+{
+	std::ofstream outfile(PathToFile, std::ofstream::binary);
+
+	outfile.write(&FileBuffer[0], FileBuffer.size());
+
+	outfile.close();
+
+	return true;
+}
+
+char* ImageFileBMP::GetPointerToPixels()
 {
 	char* rawBuffer = &FileBuffer[0];
 	rawBuffer += FileHeader.bfOffBits; // Move pointer after header
 
-	ImagePixel* pixels = new ImagePixel[Width * Height];
+	return rawBuffer;
+}
 
-	int pixelIndex = 0;
+void ImageFileBMP::SetPixelsInOrder(ImagePixel* pixels, PixelOrder order)
+{
+	char* rawBuffer = GetPointerToPixels();
 
-	for (unsigned int y = 0; y < Height; y++)
+	switch (order)
 	{
-		for (unsigned int x = 0; x < Width; x++)
-		{
-			// 24 bits = 3 bytes
-			// B G R
-			ImagePixel* bitmapPixel = (ImagePixel*)&rawBuffer[pixelIndex * 3];
+	default:
+	case BGR:
+		break;
 
-			switch (order)
-			{
-			default:
-			case BGR:
-				// In Windows is BGR default order
-				// Do nothing
-				break;
+	case RGB:
+		for (uint32_t i = 0; i < PixelsCount; i++) {
+			ImagePixel* pixel = (ImagePixel*)&rawBuffer[i * 3];
 
-			case RGB:
-				std::swap(bitmapPixel->B, bitmapPixel->R);
-				break;
-			}
-
-			pixels[pixelIndex] = *bitmapPixel;
-
-			pixelIndex++;
+			std::swap(pixel->B, pixel->R);
 		}
+		break;
 	}
 
-	PixelsCount = pixelIndex;
+	// Override pixels in memory
+	std::memcpy(rawBuffer, pixels, Width * Height * sizeof(ImagePixel));
+}
+
+ImagePixel* ImageFileBMP::GetPixelsInOrder(PixelOrder order)
+{
+	char* rawBuffer = GetPointerToPixels();
+
+	ImagePixel* pixels = new ImagePixel[PixelsCount];
+
+	for (uint32_t pixelIndex = 0; pixelIndex < PixelsCount; pixelIndex++) {
+		// 24 bits = 3 bytes
+		// B G R
+		ImagePixel* bitmapPixel = (ImagePixel*)&rawBuffer[pixelIndex * 3];
+
+		switch (order)
+		{
+		default:
+		case BGR:
+			// In Windows is BGR default order
+			// Do nothing
+			break;
+
+		case RGB:
+			std::swap(bitmapPixel->B, bitmapPixel->R);
+			break;
+		}
+
+		pixels[pixelIndex] = *bitmapPixel;
+	}
 
 	return pixels;
 }

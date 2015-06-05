@@ -4,23 +4,41 @@
 #include <string>
 
 #include "ImageFileBMP.h"
-
-void CreateBWImage(ImagePixel* inputPixels, ImagePixel* outputPixels, int pixelsCount);
+#include "ImageFilter.h"
 
 int main()
 {
-	ImageFileBMP* bitmap = new ImageFileBMP("test.bmp");
+	ImageFileBMP* bitmap = new ImageFileBMP("Input.bmp");
 	bitmap->ReadFileToMemory();
 
-	ImagePixel* pixels = bitmap->GetPixelsInOrder(PixelOrder::RGB);
-	ImagePixel* bwPixels = new ImagePixel[bitmap->PixelsCount];
-	memset(bwPixels, 0, bitmap->PixelsCount * sizeof(ImagePixel));
+	ImagePixel* pixels = bitmap->GetPixelsInOrder(PixelOrder::BGR);
 
-	CreateBWImage(pixels, bwPixels, bitmap->PixelsCount);
+	// Allocate memory for modified pixels
+	ImagePixel* modifiedPixels = new ImagePixel[bitmap->PixelsCount];
+	memset(modifiedPixels, 0, bitmap->PixelsCount * sizeof(ImagePixel));
 
+	ImageFilter filterHelper(pixels, bitmap->Width, bitmap->Height);
+
+	// Apply grayscale filter
+	filterHelper.ApplyGrayscaleFilter(modifiedPixels);
+
+	// Override original pixels with new one
+	bitmap->SetPixelsInOrder(modifiedPixels, PixelOrder::BGR);
+
+	// Write changes to file
+	bitmap->SaveChangesToFile("Output_grayscale.bmp");
+
+	// Apply sepia filter
+	memset(modifiedPixels, 0, bitmap->PixelsCount * sizeof(ImagePixel));
+	filterHelper.ApplySepiaFilter(modifiedPixels);
+
+	bitmap->SetPixelsInOrder(modifiedPixels, PixelOrder::BGR);
+	bitmap->SaveChangesToFile("Output_sepia.bmp");
+
+	// Cleanup
 	delete bitmap;
 	delete[] pixels;
-	delete[] bwPixels;
+	delete[] modifiedPixels;
 
 	return 0;
 }

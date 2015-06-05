@@ -151,21 +151,25 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="CreateBWImageKernel.cu" />
+    <CudaCompile Include="CreateGrayscaleImageKernel.cu" />
+    <CudaCompile Include="CreateSepiaImageKernel.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImageFileBMP.cpp" />
+    <ClCompile Include="ImageFilter.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImageFileBMP.h" />
+    <ClInclude Include="ImageFilter.h" />
     <ClInclude Include="ImageHeaderBMP.h" />
     <ClInclude Include="ImagePixel.h" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="test.bmp">
+    <Image Include="Input.bmp">
       <DeploymentContent>true</DeploymentContent>
     </Image>
+    <Image Include="Output_grayscale.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
