@@ -4,7 +4,7 @@
 
 #include "ImagePixel.h"
 
-// These functions will be liked from CUDA files
+// These functions will be linked from CUDA files
 
 void CreateGrayscaleImageOnGPU(ImagePixel* inputPixels, ImagePixel* outputPixels, uint32_t width, uint32_t height);
 void CreateSepiaImageOnGPU(ImagePixel* inputPixels, ImagePixel* outputPixels, uint32_t width, uint32_t height);
