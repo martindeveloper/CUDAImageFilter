@@ -5,6 +5,9 @@
 
 #include "ImagePixel.h"
 
+#define min(a, b) (a > b)? b: a
+#define max(a, b) (a > b)? a: b 
+
 __global__ void CreateSepiaImageKernel(struct ImagePixel* inputPixels, struct ImagePixel* outputPixels, unsigned int width, unsigned int height)
 {
 	unsigned int x = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -20,9 +23,15 @@ __global__ void CreateSepiaImageKernel(struct ImagePixel* inputPixels, struct Im
 	ImagePixel* outputPixel = &outputPixels[index];
 
 	// BGR order is used
-	outputPixel->B = (inputPixel->B * 0.393f) + (inputPixel->G * 0.769f) + (inputPixel->R * 0.189f);
-	outputPixel->G = (inputPixel->B * 0.349f) + (inputPixel->G * 0.686f) + (inputPixel->R * 0.168f); 
-	outputPixel->R = (inputPixel->B * 0.272f) + (inputPixel->G * 0.534f) + (inputPixel->R * 0.131f);
+	outputPixel->B = min((unsigned int)((inputPixel->B * 0.393f) + (inputPixel->G * 0.769f) + (inputPixel->R * 0.189f)), 255U);
+	outputPixel->G = min((unsigned int)((inputPixel->B * 0.349f) + (inputPixel->G * 0.686f) + (inputPixel->R * 0.168f)), 255U);
+	outputPixel->R = min((unsigned int)((inputPixel->B * 0.272f) + (inputPixel->G * 0.534f) + (inputPixel->R * 0.131f)), 255U);
+}
+
+void MallocAndCopyPixelsToDevice(ImagePixel* pixelsHost, ImagePixel** pixelsDevice, unsigned int pixelsBytes)
+{
+	assert(cudaMalloc((void **)pixelsDevice, pixelsBytes) == cudaSuccess);
+	assert(cudaMemcpy(*pixelsDevice, pixelsHost, pixelsBytes, cudaMemcpyHostToDevice) == cudaSuccess);
 }
 
 void CreateSepiaImageOnGPU(ImagePixel* inputPixels, ImagePixel* outputPixels, unsigned int width, unsigned int height)
@@ -32,13 +41,11 @@ void CreateSepiaImageOnGPU(ImagePixel* inputPixels, ImagePixel* outputPixels, un
 
 	// Output pixels on device - malloc
 	ImagePixel* outputPixelsDevice;
-	assert(cudaMalloc((void **)&outputPixelsDevice, pixelsBytes) == cudaSuccess);
-	assert(cudaMemcpy(outputPixelsDevice, outputPixels, pixelsBytes, cudaMemcpyHostToDevice) == cudaSuccess);
+	MallocAndCopyPixelsToDevice(outputPixels, &outputPixelsDevice, pixelsBytes);
 
 	// Input pixels on device - malloc and copy to VRAM
 	ImagePixel* inputPixelsDevice;
-	assert(cudaMalloc((void **)&inputPixelsDevice, pixelsBytes) == cudaSuccess);
-	assert(cudaMemcpy(inputPixelsDevice, inputPixels, pixelsBytes, cudaMemcpyHostToDevice) == cudaSuccess);
+	MallocAndCopyPixelsToDevice(inputPixels, &inputPixelsDevice, pixelsBytes);
 
 	dim3 threads(32, 32);
 	dim3 blocks(width / threads.x, height / threads.y);
@@ -58,3 +65,6 @@ void CreateSepiaImageOnGPU(ImagePixel* inputPixels, ImagePixel* outputPixels, un
 
 	cudaDeviceReset();
 }
+
+#undef min
+#undef max
