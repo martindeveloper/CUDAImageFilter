@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7AD27AD9-2D18-4A2B-8342-FE1B7C0F7D72}</ProjectGuid>
-    <RootNamespace>CUDA_ImageToBW</RootNamespace>
+    <RootNamespace>CUDA_ImageFilter</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

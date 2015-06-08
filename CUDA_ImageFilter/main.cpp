@@ -6,7 +6,7 @@
 #include "ImageFileBMP.h"
 #include "ImageFilter.h"
 
-int main()
+int main(int argc, char* argv[])
 {
 	ImageFileBMP* bitmap = new ImageFileBMP("Input.bmp");
 	bitmap->ReadFileToMemory();
